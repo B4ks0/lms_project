@@ -1,6 +1,7 @@
 from django.db import models
 from users.models import User
 from django.conf import settings
+import uuid
 
 class Course(models.Model):
     name = models.CharField(max_length=100)

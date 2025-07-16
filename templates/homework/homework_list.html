@@ -298,14 +298,19 @@
         line-height: 1.6;
       }
 
+      /* Accordion native style, tanpa animasi custom */
       .task-accordion {
         border-bottom: 1px solid var(--border-color);
+        margin-bottom: 8px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        transition: box-shadow 0.2s;
       }
-
-      .task-accordion:last-child {
-        border-bottom: none;
+      .task-accordion[open] {
+        box-shadow: 0 4px 16px rgba(79, 70, 229, 0.08);
       }
-
       .task-accordion summary {
         display: flex;
         justify-content: space-between;
@@ -315,19 +320,29 @@
         font-weight: 500;
         font-size: 15px;
         color: var(--text-dark);
-        transition: background-color 0.2s ease;
+        background: #f8fafc;
+        transition: background 0.2s;
+        outline: none;
+        border: none;
+        user-select: none;
+      }
+      .task-accordion summary:hover {
+        background: #eef2ff;
+      }
+      .task-details {
+        padding: 20px 24px;
+        background-color: #f8fafc;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        gap: 24px;
       }
 
-      .task-accordion summary:hover {
-        background-color: var(--bg-light);
+      .task-accordion[open] .summary-arrow {
+        transform: rotate(180deg);
       }
 
       .task-accordion summary::-webkit-details-marker {
         display: none;
-      }
-
-      .task-accordion[open] > summary {
-        background-color: #eef2ff;
       }
 
       .summary-title {
@@ -362,36 +377,6 @@
       .summary-deadline::before {
         content: "⏰";
         font-size: 10px;
-      }
-
-      .summary-arrow {
-        font-size: 12px;
-        color: var(--text-light);
-        transition: transform 0.3s ease;
-        margin-left: 12px;
-      }
-
-      .task-accordion[open] .summary-arrow {
-        transform: rotate(180deg);
-      }
-
-      .task-details {
-        padding: 0 24px;
-        background-color: #f8fafc;
-        border-top: 1px solid var(--border-color);
-        display: flex;
-        gap: 24px;
-        max-height: 0;
-        overflow: hidden;
-        opacity: 0;
-        transition: max-height 0.4s ease-in-out, padding 0.4s ease-in-out,
-          opacity 0.3s ease-in-out;
-      }
-
-      .task-accordion[open] .task-details {
-        max-height: 500px; /* Reduced for smoother transition */
-        padding: 20px 24px;
-        opacity: 1;
       }
 
       .task-content {
@@ -786,10 +771,6 @@
           flex-direction: column;
         }
 
-        .task-accordion[open] .task-details {
-          padding: 16px;
-        }
-
         .task-actions {
           align-items: stretch;
         }
@@ -947,7 +928,7 @@
                 <strong>Deskripsi:</strong> {{ hw.description }}
               </div>
             </div>
-            {% for task in hw.tasks.all %}
+            {% for task in hw.enriched_tasks %}
             <details class="task-accordion">
               <summary>
                 <div class="summary-title">
@@ -994,9 +975,15 @@
                     <span>Course tidak ditemukan.</span>
                     {% endif %} {% endif %} {%elif task.task_type == "catatan"%}
                     {% if task.completed %}
-                    <span>✅ Sudah diunggah</span>
+                    <span>✅ Sudah dikerjakan</span>
+                    {% elif task.waiting_approval %}
+                    <span>⏳ Sementara dicek </span>
                     {% else %}
-                    <a class="btn btn-secondary" href="#">Submit Tugas</a>
+                    <a
+                      class="btn btn-secondary"
+                      href="{% url 'homework_upload' task.id %}"
+                      >Submit Tugas</a
+                    >
                     {% endif %} {% endif %}
                   </div>
                 </div>
@@ -1087,56 +1074,23 @@
           });
         });
 
-        // Smooth accordion toggle with Google Classroom-like animation
-        const homeworkCards = document.querySelectorAll(".homework-card");
-        homeworkCards.forEach((card) => {
-          const accordions = card.querySelectorAll(".task-accordion");
-          accordions.forEach((accordion) => {
-            const summary = accordion.querySelector("summary");
-            const details = accordion.querySelector(".task-details");
-
-            // Calculate content height dynamically
-            const updateMaxHeight = () => {
-              const contentHeight = details.scrollHeight;
-              details.style.maxHeight = accordion.open
-                ? `${contentHeight}px`
-                : "0";
-            };
-
-            summary.addEventListener("click", (e) => {
-              e.preventDefault();
-              const isOpen = accordion.open;
-
-              // Close all other accordions in the same card
-              accordions.forEach((otherAccordion) => {
-                if (otherAccordion !== accordion && otherAccordion.open) {
-                  otherAccordion.removeAttribute("open");
-                  otherAccordion.querySelector(
-                    ".task-details"
-                  ).style.maxHeight = "0";
+        // Accordion: hanya satu task-accordion yang boleh terbuka
+        document
+          .querySelectorAll(".homework-container")
+          .forEach((container) => {
+            const accordions = container.querySelectorAll(".task-accordion");
+            accordions.forEach((accordion) => {
+              accordion.addEventListener("toggle", function () {
+                if (accordion.open) {
+                  accordions.forEach((other) => {
+                    if (other !== accordion && other.open) {
+                      other.open = false;
+                    }
+                  });
                 }
               });
-
-              // Toggle the clicked accordion
-              setTimeout(() => {
-                if (isOpen) {
-                  details.style.maxHeight = "0";
-                  accordion.removeAttribute("open");
-                } else {
-                  accordion.setAttribute("open", "");
-                  updateMaxHeight();
-                }
-              }, 50); // Small delay to ensure smooth transition
-            });
-
-            // Update max-height on window resize to handle responsive content
-            window.addEventListener("resize", () => {
-              if (accordion.open) {
-                updateMaxHeight();
-              }
             });
           });
-        });
       });
     </script>
   </body>

@@ -12,4 +12,8 @@ class HomeworkAdmin(admin.ModelAdmin):
     inlines = [HomeworkTaskInline]
 
 admin.site.register(HomeworkTask)
-admin.site.register(HomeworkSubmission)
+
+@admin.register(HomeworkSubmission)
+class HomeworkSubmissionAdmin(admin.ModelAdmin):
+    list_display = ('student', 'task', 'submitted_at', 'is_approved')
+    list_editable = ('is_approved',)

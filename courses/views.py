@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import Course, QuizResult
+from homework.models import HomeworkTask, HomeworkSubmission  # ✅ Tambahan
+
 import json
 import re
 
@@ -71,6 +73,21 @@ def generate_quiz(request, course_id):
                 total_questions=total,
                 percentage=percentage
             )
+            # ✅ Tandai tugas quiz selesai kalau ada
+            related_tasks = HomeworkTask.objects.filter(  # type: ignore
+                task_type='quiz',
+                quiz_keyword__iexact=course.name
+            )
+
+            print("🧪 course.name:", course.name)
+            print("🧪 related_tasks:", related_tasks)
+
+            for task in related_tasks:
+                HomeworkSubmission.objects.get_or_create(  # type: ignore
+                    student=request.user,
+                    task=task,
+                    defaults={'quiz_completed': True}
+                )
 
             request.session["quiz_last_answers"] = {
                 "questions": questions,

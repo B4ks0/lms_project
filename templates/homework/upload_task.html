@@ -1,0 +1,588 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload Tugas - EnglishKids LMS</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{% static 'images/favicon.ico' %}"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    />
+    <style>
+      :root {
+        --primary-color: #4f46e5;
+        --secondary-color: #10b981;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --bg-light: #f9fafb;
+        --bg-white: #ffffff;
+        --border-color: #e5e7eb;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          Roboto, sans-serif;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 240px;
+        background: white;
+        border-right: 1px solid #e8e8e8;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.mobile-hidden {
+        transform: translateX(-100%);
+      }
+
+      .mobile-menu-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 101;
+        background: white;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        padding: 8px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+      }
+
+      .mobile-menu-toggle:hover {
+        background: #f8f8f8;
+      }
+
+      .mobile-menu-toggle span {
+        display: block;
+        width: 20px;
+        height: 2px;
+        background: #1a1a1a;
+        margin: 4px 0;
+        transition: 0.3s;
+      }
+
+      .mobile-menu-toggle.active span:nth-child(1) {
+        transform: rotate(-45deg) translate(-4px, 4px);
+      }
+
+      .mobile-menu-toggle.active span:nth-child(2) {
+        opacity: 0;
+      }
+
+      .mobile-menu-toggle.active span:nth-child(3) {
+        transform: rotate(45deg) translate(-4px, -4px);
+      }
+
+      .mobile-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .mobile-overlay.active {
+        opacity: 1;
+      }
+
+      .sidebar-header {
+        padding: 24px 20px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      .logo {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1a1a1a;
+        text-decoration: none;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logo::before {
+        content: "📚";
+        font-size: 20px;
+      }
+
+      .auth-section {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 24px;
+      }
+
+      .user-greeting {
+        font-size: 14px;
+        color: #666;
+        font-weight: 400;
+      }
+
+      .user-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .menu-item {
+        padding: 12px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        color: #666;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: left;
+        position: relative;
+      }
+
+      .menu-item:hover {
+        background: #f8f8f8;
+        color: #1a1a1a;
+      }
+
+      .menu-item-primary {
+        color: #1a1a1a;
+        font-weight: 600;
+        background: #f8f8f8;
+      }
+
+      .menu-item-primary:hover {
+        background: #f0f0f0;
+      }
+
+      .menu-item-ghost {
+        color: #666;
+        font-weight: 500;
+        margin-top: auto;
+      }
+
+      .menu-item-ghost:hover {
+        color: #dc2626;
+        background: #fef2f2;
+      }
+
+      .menu-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+      }
+
+      .menu-text {
+        flex: 1;
+      }
+
+      /* Main Content */
+      .main {
+        flex: 1;
+        padding: 40px;
+        margin-left: 240px;
+        background: var(--bg-light);
+      }
+
+      .header {
+        text-align: left;
+        margin-bottom: 32px;
+      }
+
+      .header h2 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--text-dark);
+      }
+
+      .header p {
+        font-size: 16px;
+        color: var(--text-light);
+        margin-top: 4px;
+      }
+
+      .upload-container {
+        background: var(--bg-white);
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 32px;
+      }
+
+      .form-group {
+        margin-bottom: 16px;
+      }
+
+      .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: #f8f9fa;
+        color: var(--text-dark);
+        transition: border-color 0.2s ease;
+      }
+
+      .form-group input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+      }
+
+      .form-error {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      .uploaded-image {
+        max-width: 100%;
+        border-radius: 8px;
+        margin-top: 8px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #4338ca;
+      }
+
+      .btn-secondary {
+        background: var(--secondary-color);
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background: #059669;
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .mobile-menu-toggle {
+          display: block;
+        }
+
+        .mobile-overlay.active {
+          display: block;
+        }
+
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.mobile-open {
+          transform: translateX(0);
+        }
+
+        .main {
+          margin-left: 0;
+          padding: 20px;
+          padding-top: 80px;
+        }
+
+        .header h2 {
+          font-size: 24px;
+        }
+
+        .upload-container {
+          margin: 0 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header h2 {
+          font-size: 20px;
+        }
+
+        .upload-container {
+          padding: 16px;
+        }
+
+        .sidebar {
+          width: 280px;
+        }
+
+        .btn {
+          font-size: 13px;
+          padding: 6px 12px;
+        }
+      }
+
+      .modal-confirm-overlay {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.4);
+        justify-content: center;
+        align-items: center;
+      }
+      .modal-confirm-overlay.active {
+        display: flex;
+      }
+      .modal-confirm {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        padding: 32px 24px 24px 24px;
+        max-width: 350px;
+        text-align: center;
+        animation: popin 0.2s cubic-bezier(0.4, 2, 0.6, 1) both;
+      }
+      .modal-confirm h3 {
+        font-size: 20px;
+        margin-bottom: 12px;
+        color: #4f46e5;
+      }
+      .modal-confirm p {
+        color: #444;
+        margin-bottom: 24px;
+      }
+      .modal-confirm .btn {
+        min-width: 100px;
+        margin: 0 8px;
+      }
+      @keyframes popin {
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="/" class="logo">EnglishKids</a>
+      </div>
+      <div class="auth-section">
+        {% if user.is_authenticated %}
+        <div class="user-info">
+          <span class="user-greeting">Hello,</span>
+          <span class="user-name">{{ user.username }}</span>
+        </div>
+        <a href="{% url 'dashboard_redirect' %}" class="menu-item">
+          <span class="menu-icon">🏠</span>
+          <span class="menu-text">Dashboard</span>
+        </a>
+        <a href="{% url 'course_redirect' %}" class="menu-item">
+          <span class="menu-icon">📖</span>
+          <span class="menu-text">Courses</span>
+        </a>
+        <a href="{% url 'homework_list' %}" class="menu-item menu-item-primary">
+          <span class="menu-icon">📝</span>
+          <span class="menu-text">Homework</span>
+        </a>
+        <a href="{% url 'profile' %}" class="menu-item">
+          <span class="menu-icon">🙂</span>
+          <span class="menu-text">Profile</span>
+        </a>
+        {% if user.is_superuser %}
+        <a href="/admin/" class="menu-item">
+          <span class="menu-icon">⚙️</span>
+          <span class="menu-text">Admin</span>
+        </a>
+        {% endif %}
+        <form
+          action="{% url 'logout' %}"
+          method="post"
+          style="display: contents"
+        >
+          {% csrf_token %}
+          <button type="submit" class="menu-item menu-item-ghost">
+            <span class="menu-icon">🚪</span>
+            <span class="menu-text">Logout</span>
+          </button>
+        </form>
+        {% else %}
+        <a href="{% url 'login' %}" class="menu-item menu-item-primary">
+          <span class="menu-icon">🔐</span>
+          <span class="menu-text">Login</span>
+        </a>
+        {% endif %}
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="container">
+        <div class="header">
+          <h2>Upload Tugas</h2>
+          <p>Unggah hasil tugasmu sesuai instruksi di bawah ini.</p>
+        </div>
+        <div class="upload-container">
+          <p><strong>Instruksi:</strong> {{ task.instruction }}</p>
+          <form
+            id="uploadTaskForm"
+            method="post"
+            enctype="multipart/form-data"
+            style="margin-top: 24px"
+          >
+            {% csrf_token %}
+            <div style="margin-bottom: 16px">
+              {{ form.image.label_tag }}<br />
+              {{ form.image }} {% if form.image.errors %}
+              <div style="color: red">{{ form.image.errors }}</div>
+              {% endif %}
+            </div>
+            {% if form.instance.image %}
+            <div style="margin-bottom: 16px">
+              <strong>Gambar yang sudah diupload:</strong><br />
+              <img
+                src="{{ form.instance.image.url }}"
+                alt="Tugas Upload"
+                style="max-width: 100%; border-radius: 8px; margin-top: 8px"
+              />
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary" id="uploadBtn">
+              Submit
+            </button>
+            <a
+              href="{% url 'homework_list' %}"
+              class="btn btn-secondary"
+              style="margin-left: 8px"
+              >Kembali</a
+            >
+          </form>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal Konfirmasi Upload -->
+    <div class="modal-confirm-overlay" id="modalConfirmUpload">
+      <div class="modal-confirm">
+        <h3>Konfirmasi Upload</h3>
+        <p>Apakah kamu yakin mau upload ini ke guru?</p>
+        <button class="btn btn-primary" id="confirmUploadBtn">
+          Ya, Upload
+        </button>
+        <button class="btn btn-secondary" id="cancelUploadBtn">Batal</button>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("uploadTaskForm");
+        const modal = document.getElementById("modalConfirmUpload");
+        const confirmBtn = document.getElementById("confirmUploadBtn");
+        const cancelBtn = document.getElementById("cancelUploadBtn");
+        const uploadBtn = document.getElementById("uploadBtn");
+        let submitReady = false;
+        if (form) {
+          form.addEventListener("submit", function (e) {
+            if (!submitReady) {
+              e.preventDefault();
+              modal.classList.add("active");
+            } else {
+              submitReady = false; // reset untuk submit berikutnya
+            }
+          });
+        }
+        if (confirmBtn) {
+          confirmBtn.addEventListener("click", function () {
+            submitReady = true;
+            modal.classList.remove("active");
+            form.requestSubmit();
+          });
+        }
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", function () {
+            modal.classList.remove("active");
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

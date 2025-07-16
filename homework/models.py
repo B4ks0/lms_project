@@ -26,14 +26,15 @@ class HomeworkTask(models.Model):
     posted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.task_type} - {self.instruction[:20]}"  # type: ignore
+        return f"{self.task_type} - {self.instruction[:20]}"
 
 class HomeworkSubmission(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     task = models.ForeignKey(HomeworkTask, on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(auto_now_add=True)
     image = models.ImageField(upload_to='homework_uploads/', blank=True, null=True)
-    quiz_completed = models.BooleanField(default=False)  # type: ignore
+    quiz_completed = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)  # True jika sudah di-ACC admin/guru
 
     def __str__(self):
-        return f"{self.student.username} - {self.task.instruction[:20]}"  # type: ignore
+        return f"{self.student.username} - {self.task.instruction[:20]}"
