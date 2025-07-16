@@ -69,7 +69,8 @@ def homework_list(request):
         # Tambahkan hasil task yang sudah diproses ke atribut custom
         hw.enriched_tasks = task_list
 
-    return render(request, "homework/homework_list.html", {"homeworks": homeworks})
+    toast = request.session.pop('toast', None)
+    return render(request, "homework/homework_list.html", {"homeworks": homeworks, "toast": toast})
 
 def homework_upload(request, task_id):
     task = get_object_or_404(HomeworkTask, id=task_id)
@@ -86,6 +87,11 @@ def homework_upload(request, task_id):
         form = HomeworkUploadForm(request.POST, request.FILES, instance=submission)
         if form.is_valid():
             form.save()
+            request.session['toast'] = {
+                'icon': '📤',
+                'message': 'Tugas terupload! Tunggu pengecekan dari guru!',
+                'color': '#2563eb'
+            }
             return HttpResponseRedirect(reverse('homework_list'))
     else:
         form = HomeworkUploadForm(instance=submission)

@@ -503,6 +503,15 @@
         </div>
         <div class="upload-container">
           <p><strong>Instruksi:</strong> {{ task.instruction }}</p>
+          <div class="upload-info-box" style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:16px;">
+            <span style="font-size:32px;">📸</span>
+            <div>
+              <strong>Syarat Upload:</strong><br>
+              Hanya <b>foto dari HP</b> (jpg, jpeg, png, heic, webp), max 5MB.<br>
+              Contoh: foto tugas catatan di kertas, hasil tulisan tangan, dsb.<br>
+              Pastikan gambar jelas dan tidak blur.
+            </div>
+          </div>
           <form
             id="uploadTaskForm"
             method="post"
@@ -510,10 +519,19 @@
             style="margin-top: 24px"
           >
             {% csrf_token %}
-            <div style="margin-bottom: 16px">
-              {{ form.image.label_tag }}<br />
-              {{ form.image }} {% if form.image.errors %}
-              <div style="color: red">{{ form.image.errors }}</div>
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label for="id_image" style="font-weight:600;font-size:15px;">Upload Foto Tugas</label>
+              <div id="customFileDrop" class="custom-file-drop" style="border:2px dashed #a5b4fc;background:#f1f5f9;border-radius:12px;padding:32px 0;text-align:center;cursor:pointer;position:relative;transition: border-color 0.2s;">
+                <input type="file" name="image" id="id_image" accept="image/*" style="opacity:0;position:absolute;left:0;top:0;width:100%;height:100%;cursor:pointer;z-index:2;" />
+                <div id="fileDropContent" style="z-index:1;position:relative;">
+                  <span style="font-size:40px;display:block;">🖼️</span>
+                  <span id="fileDropText" style="color:#6366f1;font-weight:500;">Klik di sini atau drag & drop foto tugas kamu</span>
+                  <div id="fileNamePreview" style="margin-top:8px;color:#6b7280;font-size:13px;"></div>
+                </div>
+                <img id="imgPreview" src="" alt="Preview" style="display:none;max-width:180px;margin:16px auto 0 auto;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);" />
+              </div>
+              {% if form.image.errors %}
+                <div style="color: #dc2626; font-size: 13px; margin-top: 8px;">{{ form.image.errors }}</div>
               {% endif %}
             </div>
             {% if form.instance.image %}
@@ -526,8 +544,8 @@
               />
             </div>
             {% endif %}
-            <button type="submit" class="btn btn-primary" id="uploadBtn">
-              Submit
+            <button type="submit" class="btn btn-primary" id="uploadBtn" style="font-size:17px;padding:14px 32px;margin-top:12px;display:inline-flex;align-items:center;gap:8px;">
+              <span style="font-size:20px;">⬆️</span> Upload Tugas
             </button>
             <a
               href="{% url 'homework_list' %}"
@@ -583,6 +601,53 @@
           });
         }
       });
+
+      // Custom file input & preview
+      const fileInput = document.getElementById('id_image');
+      const fileDrop = document.getElementById('customFileDrop');
+      const fileDropText = document.getElementById('fileDropText');
+      const fileNamePreview = document.getElementById('fileNamePreview');
+      const imgPreview = document.getElementById('imgPreview');
+      if (fileInput && fileDrop) {
+        fileDrop.addEventListener('click', function(e) {
+          fileInput.click();
+        });
+        fileInput.addEventListener('change', function(e) {
+          if (fileInput.files && fileInput.files[0]) {
+            const file = fileInput.files[0];
+            fileNamePreview.textContent = file.name;
+            if (file.type.startsWith('image/')) {
+              const reader = new FileReader();
+              reader.onload = function(ev) {
+                imgPreview.src = ev.target.result;
+                imgPreview.style.display = 'block';
+              };
+              reader.readAsDataURL(file);
+            } else {
+              imgPreview.style.display = 'none';
+            }
+          } else {
+            fileNamePreview.textContent = '';
+            imgPreview.style.display = 'none';
+          }
+        });
+        // Drag & drop
+        fileDrop.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          fileDrop.style.borderColor = '#6366f1';
+        });
+        fileDrop.addEventListener('dragleave', function(e) {
+          fileDrop.style.borderColor = '#a5b4fc';
+        });
+        fileDrop.addEventListener('drop', function(e) {
+          e.preventDefault();
+          fileDrop.style.borderColor = '#a5b4fc';
+          if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            fileInput.files = e.dataTransfer.files;
+            fileInput.dispatchEvent(new Event('change'));
+          }
+        });
+      }
     </script>
   </body>
 </html>

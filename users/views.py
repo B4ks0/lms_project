@@ -12,9 +12,10 @@ def lobby(request):
 
 @login_required
 def home(request):
+    show_login_toast = request.session.pop('show_login_toast', False)
     if request.user.is_authenticated:
-        return render(request, 'welcome.html', {'user': request.user})
-    return render(request, 'welcome.html')
+        return render(request, 'welcome.html', {'user': request.user, 'show_login_toast': show_login_toast})
+    return render(request, 'welcome.html', {'show_login_toast': show_login_toast})
 
 @login_required
 def dashboard_redirect(request):
@@ -58,5 +59,5 @@ def change_password(request):
 
 class CustomLoginView(LoginView):
     def form_valid(self, form):
-        messages.success(self.request, "🎉 Kamu berhasil login! Selamat datang!")
+        self.request.session['show_login_toast'] = True
         return super().form_valid(form)

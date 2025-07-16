@@ -588,9 +588,52 @@
           height: 35px;
         }
       }
+
+      .toast-progress {
+        position: absolute;
+        left: 0; bottom: 0; right: 0;
+        height: 4px;
+        background: rgba(255,255,255,0.85);
+        border-radius: 0 0 12px 12px;
+        width: 100%;
+        animation: toastProgressBar 4s linear forwards;
+      }
+      #toast-homework-success { position:fixed; overflow:hidden; }
+      @keyframes toastProgressBar {
+        from { width: 100%; }
+        to { width: 0%; }
+      }
     </style>
   </head>
   <body>
+    {% if show_homework_toast %}
+    <div id="toast-homework-success" style="position:fixed;top:32px;right:32px;z-index:9999;min-width:280px;max-width:90vw;background:#16a34a;color:white;padding:18px 32px 28px 32px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.12);font-size:16px;display:flex;align-items:center;gap:12px;animation:fadeInDown 0.6s;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:12px;width:100%;">
+        <span style="font-size:22px;">🎉</span>
+        <span><strong>Hore! </strong>Kamu berhasil menyelesaikan tugas quiz dari homework! Selamat! 🥳</span>
+      </div>
+      <div class="toast-progress"></div>
+    </div>
+    <style>
+      @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-40px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeOutUp {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-40px); }
+      }
+    </style>
+    <script>
+      setTimeout(function() {
+        var toast = document.getElementById('toast-homework-success');
+        if (toast) {
+          toast.style.animation = 'fadeOutUp 0.6s';
+          setTimeout(function() { toast.remove(); }, 600);
+        }
+      }, 4000);
+    </script>
+    {% endif %}
     <main class="main">
       <div class="container">
         <div class="results-container">

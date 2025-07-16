@@ -82,12 +82,15 @@ def generate_quiz(request, course_id):
             print("🧪 course.name:", course.name)
             print("🧪 related_tasks:", related_tasks)
 
+            show_homework_toast = False
             for task in related_tasks:
                 HomeworkSubmission.objects.get_or_create(  # type: ignore
                     student=request.user,
                     task=task,
                     defaults={'quiz_completed': True}
                 )
+                if percentage >= 50:
+                    show_homework_toast = True
 
             request.session["quiz_last_answers"] = {
                 "questions": questions,
@@ -100,12 +103,18 @@ def generate_quiz(request, course_id):
                 'course': course,
                 'score': score,
                 'total': total,
-                'percentage': percentage
+                'percentage': percentage,
+                'show_homework_toast': show_homework_toast
             })
 
         except Exception as e:
             print("❌ POST Error:", e)
             error_message = "Terjadi kesalahan saat memproses jawaban."
+            return render(request, 'courses/quiz.html', {
+                'course': course,
+                'questions': questions if 'questions' in locals() else [],
+                'error': error_message
+            })
 
     # === GET: Minta soal dari Gemini ===
     else:
